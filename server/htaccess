@@ -1,0 +1,15 @@
+## .htaccess file for jskomment.php
+
+RewriteEngine on
+
+# test service
+RewriteRule ^t$ jskomment.php?action=t [QSA,L]
+
+# getting a list of comments
+RewriteRule ^s$ jskomment.php?action=s [QSA,L]
+
+# getting a list of list of comments
+RewriteRule ^sx$ jskomment.php?action=sx [QSA,L]
+
+# posting a new comment
+RewriteRule ^p$ jskomment.php?action=p [QSA,L] 
