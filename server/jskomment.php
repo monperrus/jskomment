@@ -182,6 +182,10 @@ function add_comment($comment) {
   @$comment['email'] = htmlspecialchars(strip_tags(@$comment['email']), ENT_NOQUOTES, 'utf-8');
   @$comment['comment'] = htmlspecialchars(strip_tags(@$comment['comment']), ENT_NOQUOTES, 'utf-8');
 
+  if (!is_writable(DATADIR) || (file_exists($fname) && !is_writable($fname))) {
+    header('HTTP/1.1 503');
+    die("cannot write to ".DATADIR."\nDoes it exist? Are the permissions correct?");
+  }
   $file  = fopen($fname, "a");
   fputs($file,json_encode($comment)."\n");
   fclose($file);
