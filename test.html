@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>JSKOMMENT Test</title>
+<!-- required -->
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+<!-- optional, if you want to use Flash -->
+<!-- <script src="lib/swfobject.js"></script> -->
+
+<!-- optional, if you want to support browser with no native support for JSON-->
+<!-- <script src="http://www.JSON.org/json2.js"></script> -->
+<script>
+JSKOMMENT_CONFIG={};
+JSKOMMENT_CONFIG.url = "server/";
+</script>
+<script src="client/jskomment-core.js"></script>
+</head>
+<body>
+
+You can copy this page on another server, the comments will remain, except the first thread which is identified by the page URL (see HTML source).
+
+<h2>this page</h2>
+You will receive a legacy which will place you above want.
+<!-- No title attribute, the comment thread is identified by the page URL -->
+<div class="jskomment"></div>
+
+<h2>foo</h2>
+Caution: breathing may be hazardous to your health.
+<div class="jskomment" title="http://foo"></div>
+
+
+<br/>
+<h2>bar</h2>
+Noise proves nothing.  Often a hen who has merely laid an egg cackles
+as if she laid an asteroid.
+    -- Mark Twain
+<div class="jskomment" title="http://bar"></div>
+
+
+
+</body>
+
+<script> JSKOMMENT.main(); </script>
+</html>
