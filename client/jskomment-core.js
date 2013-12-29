@@ -1,6 +1,9 @@
 /* This is JSKOMMENT client-side Javascript.
  *
- * Should be served together with jQuery, swfobject and JSON2 <http://www.JSON.org/json2.js>
+ * Should be served together with:
+ * jQuery: <http://code.jquery.com/jquery-1.10.1.min.js>
+ * swfobject: <>
+ * JSON2: <http://www.JSON.org/json2.js>
  */
 
 var JSKOMMENT = {}
@@ -9,6 +12,12 @@ var JSKOMMENT_CONFIG = window.JSKOMMENT_CONFIG || {};
 
 /** The URL of the commenting system */
 JSKOMMENT.url = JSKOMMENT_CONFIG.url || 'http://jskomment.appspot.com';
+
+/** The URL of the CSS */
+JSKOMMENT.CSS = JSKOMMENT_CONFIG.CSS || "./client/jskomment.css";
+
+/** The URL of the wait image */
+JSKOMMENT.waitImg = JSKOMMENT_CONFIG.waitImg || "./client/modal-ajax-wait.gif";
 
 /** The method to use with the server 
  * GUESS: auto-detection based on heuristics (recommended)
@@ -44,8 +53,8 @@ JSKOMMENT.format_function = JSKOMMENT_CONFIG.format_function || function (str) {
 
 
 if (window.console) {
-  window.console.log("using "+JSKOMMENT.url);
-  window.console.log("using protocol "+JSKOMMENT.protocol);
+  window.console.log("using server (JSKOMMENT.url):"+JSKOMMENT.url);
+  window.console.log("using protocol (JSKOMMENT.protocol):"+JSKOMMENT.protocol);
 }
 
 /** triggers an Ajax call with tailoring for certain protocols (see JSKOMMENT.protocol) */
@@ -122,6 +131,9 @@ JSKOMMENT.send = function (elem, options) {
     error: function (xhr,err) {
       if (xhr.status == 403) {
         JSKOMMENT.captcha(elem);        
+      }     
+      if (xhr.status == 503) {
+        alert(xhr.responseText);        
       }     
     }
   }
@@ -391,7 +403,7 @@ JSKOMMENT.main = function () {
     css.attr({
       rel:  "stylesheet",
       type: "text/css",
-      href: JSKOMMENT.url+"/jskomment.css"
+      href: JSKOMMENT.CSS
     });
     css.appendTo($('head'));
   }); // end DOM ready
@@ -483,7 +495,7 @@ JSKOMMENT.mainContinue = function () {
   JSKOMMENT.disableForms = function() {
     var submit = $('.jskomment input[type="submit"]');
     submit.attr("disabled", true);
-    submit.after($('<img class="modal-ajax-wait" src="'+JSKOMMENT.url+'/modal-ajax-wait.gif"/>'));
+    submit.after($('<img class="modal-ajax-wait" src="'+JSKOMMENT.waitImg+'"/>'));
   }
   
   /**  re-enables the submit form */
