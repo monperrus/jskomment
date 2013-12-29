@@ -1,0 +1,54 @@
+.jskomment_header {
+  font-weight: bold;
+}
+
+.jskomment_newcomment {
+  padding-top: 5px;
+  font-weight: bold;
+  width: 600px;
+}
+
+.jskomment_commentval {
+}
+
+.jskomment_comment {
+  border-color:#48B1D9;
+  border-style:dashed;
+  border-width:2px;
+  color:#000000;
+  margin:4px;
+  margin-left:10px;
+  padding:4px;
+}
+
+.jskomment {
+  margin-top:7px;
+  margin-bottom:7px;
+  width: 600px;
+}
+
+.jskomment_input2 {
+  vertical-align:top;
+  width: 608px;/* 500 + 4*2 (related to jskomment.width*/
+  margin:4px;
+  margin-left:10px;
+}
+
+.jskomment_date {
+  font-size:60%;
+  display:block;
+}
+
+.jskomment_form {
+}
+
+.jskomment_submit {
+  text-align:right;
+}
+
+#jskomment_flash {
+  visibility: hidden;
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+}
