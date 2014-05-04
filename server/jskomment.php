@@ -57,8 +57,8 @@ function jskomment_js() {
 
 /** removes the authorization data from checks whether the recaptcha is correct if a private key is defined, then returns the $comment data without recaptcha info */
 function clean_comment($comment) {
-  unset($comment['recaptcha_response_field']);
-  unset($comment['recaptcha_challenge_field']);
+  unset($comment['captcha_response_field']);
+  unset($comment['captcha_challenge_field']);
   return $comment;
 }
 
@@ -69,8 +69,18 @@ function is_authorized($comment) {
     return true;
   }
   
-  $recaptcha_response_field = @$comment['recaptcha_response_field'];
-  $recaptcha_challenge_field = @$comment['recaptcha_challenge_field'];
+  // for backwards compatibility
+  if (isset($comment['recaptcha_response_field'])) {
+    $comment['captcha_response_field'] = $comment['recaptcha_response_field'];
+    unset($comment['recaptcha_response_field']);    
+  }  
+  if (isset($comment['recaptcha_challenge_field'])) {
+    $comment['captcha_challenge_field'] = $comment['recaptcha_response_field'];
+    unset($comment['recaptcha_challenge_field']);
+  }  
+  
+  $recaptcha_response_field = @$comment['captcha_response_field'];
+  $recaptcha_challenge_field = @$comment['captcha_challenge_field'];
 
   $resp = recaptcha_check_answer(RECAPTCHA_PRIVATE_KEY,
                                       $_SERVER["REMOTE_ADDR"],
