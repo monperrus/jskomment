@@ -19,6 +19,9 @@ JSKOMMENT.CSS = JSKOMMENT_CONFIG.CSS || "./client/jskomment.css";
 /** The URL of the wait image */
 JSKOMMENT.waitImg = JSKOMMENT_CONFIG.waitImg || "./client/modal-ajax-wait.gif";
 
+/** The presentation message of the Captcha system */
+JSKOMMENT.captcha_message = JSKOMMENT_CONFIG.captcha_message || "Captcha (submit to reload a new one): ";
+
 /** The method to use with the server 
  * GUESS: auto-detection based on heuristics (recommended)
  * PROBE: auto-detection based on trying a test URL on the server 
@@ -501,7 +504,7 @@ JSKOMMENT.authenticate_with_captcha_default = function(elem) {
   $.ajax({
     url:JSKOMMENT_CONFIG.captcha_url,
     success:function(response) {
-      $('.jskomment_captcha').html($('<div>Captcha: <img src="data:image/jpeg;base64,'+response.challenge_data+'"/>'
+      $('.jskomment_captcha').html($('<div>'+JSKOMMENT.captcha_message+'<img src="data:image/jpeg;base64,'+response.challenge_data+'"/>'
       +'</div>'));
       
       // adding the challenge id
