@@ -12,7 +12,19 @@
 <script>
 JSKOMMENT_CONFIG={};
 JSKOMMENT_CONFIG.url = "server/";
+// this URL should return a captcha challenge as JSON
+// { 
+//    "challenge_id": "foobar",
+//
+//    // a base64 encoded JPEG image
+//    "challenge_data" = "76HEBN20jheiutgvh7EJHKZR3ljh......"
+// }
+JSKOMMENT_CONFIG.captcha_url = 'captcha.php';
+JSKOMMENT_CONFIG.authenticate = function(elem) {
+  JSKOMMENT.authenticate_with_captcha_default(elem);
+};
 </script>
+
 <script src="client/jskomment-core.js"></script>
 </head>
 <body>
