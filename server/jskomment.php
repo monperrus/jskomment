@@ -6,10 +6,11 @@ It is meant to be used with an appropriate .htaccess file
 @include('jskomment.local.php');
 
 if (defined('RECAPTCHA_PRIVATE_KEY')) {
-  // silent if recaptchalib is not present 
   // may have already been included or an alternative implementation is provided somewhere
-  @include('recaptchalib.php');
-
+  if (!function_exists('recaptcha_check_answer')) {
+    @include('recaptchalib.php');
+  }
+  
   // sanity check_recaptcha
   if (!function_exists('recaptcha_check_answer')) {
     header('HTTP/1.1 503');
@@ -54,29 +55,30 @@ function jskomment_js() {
   exit;
 }
 
+/** removes the authorization data from checks whether the recaptcha is correct if a private key is defined, then returns the $comment data without recaptcha info */
+function clean_comment($comment) {
+  unset($comment['recaptcha_response_field']);
+  unset($comment['recaptcha_challenge_field']);
+  return $comment;
+}
+
 /** checks whether the recaptcha is correct if a private key is defined, then returns the $comment data without recaptcha info */
-function check_recaptcha($comment) {
+if (!function_exists('is_authorized')) {
+function is_authorized($comment) {  
+  if (!defined('RECAPTCHA_PRIVATE_KEY')) { // should be defined in jskomment.local.php
+    return true;
+  }
+  
   $recaptcha_response_field = @$comment['recaptcha_response_field'];
   $recaptcha_challenge_field = @$comment['recaptcha_challenge_field'];
 
-  unset($comment['recaptcha_response_field']);
-  unset($comment['recaptcha_challenge_field']);
-  
-  if (!defined('RECAPTCHA_PRIVATE_KEY')) { // should be defined in jskomment.local.php
-    return $comment;
-  }
-  
-  $resp = recaptcha_check_answer (RECAPTCHA_PRIVATE_KEY,
+  $resp = recaptcha_check_answer(RECAPTCHA_PRIVATE_KEY,
                                       $_SERVER["REMOTE_ADDR"],
                                       $recaptcha_challenge_field,
                                       $recaptcha_response_field);
 
-  if ($resp->is_valid) {
-    return $comment;
-  } else {
-    header('HTTP/1.0 403 Unauthorized');
-    exit;
-  }
+  return $resp->is_valid;
+}
 }
 
 /** sets HTTP response headers to support cross-domain calls */
@@ -163,7 +165,13 @@ function get_comments_as_json() {
 
 /** adds a $comment (assoc array) in the database */
 function add_comment($comment) {
-  $comment = check_recaptcha($comment);
+  if (!is_authorized($comment)) {
+    header('HTTP/1.0 403 Unauthorized');
+    exit;
+  }
+  
+  $comment = clean_comment($comment);
+
   add_comment_action($comment);
   $fname=DATADIR.sha1(@$comment['title']);
 
