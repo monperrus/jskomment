@@ -110,10 +110,7 @@ JSKOMMENT.send = function (elem, callback) {
   // saving some values in local storage if possible
   try { if (localStorage) {localStorage.setItem('jskomment_username', $(elem).find('input[name="name"]').val());}} catch (e) {}
   try { if (localStorage) {localStorage.setItem('jskomment_email', $(elem).find('input[name="email"]').val());}} catch (e) {}
-  
-  // may be null
-  data['authorization_data']=JSKOMMENT.authorization_data;
-  
+    
   // by default we use JSON-P with HTTP GET = Script node insertion in JQuery
   // cross-browser but limited to ~2k data
   var ajaxParams = {
@@ -129,7 +126,7 @@ JSKOMMENT.send = function (elem, callback) {
         try {
         JSKOMMENT_CONFIG.authenticate(elem);        
         } catch (exception) {
-          $('.jskomment').text('[jskomment] error no function authenticate while server sends 403 unauthorized');
+          $('.jskomment').text('[jskomment] error no function authenticate while server sends 403 unauthorized'+exception);
         }
       }     
       if (xhr.status == 503) {
@@ -249,7 +246,6 @@ JSKOMMENT.createAddCommentElement = function () {
     +'<div class="jskomment_input1">New comment from <input type="text" name="name" size="15"  value="'+name+'"/>: </div>'
     +'<div class="jskomment_input1">Email (optional, for pingback): <input type="text" name="email" size="15"  value="'+email+'"/>: </div>'
     +'<div class="jskomment_commentval"><textarea class="jskomment_input2" rows="6" cols="32" name="comment" value="your comment"/></div>'
-    +'<div class="jskomment_submit"><input class="jskomment_button" name="submit" type="submit" value="submit"/></div>'
     +'</form>');   
     
     form.submit(
@@ -262,6 +258,7 @@ JSKOMMENT.createAddCommentElement = function () {
     $(clicked).parents('.jskomment').append(form);
     $(clicked).remove();
     $('<div class="jskomment_captcha"></div>').appendTo(form);    
+    $('<div class="jskomment_submit"><input class="jskomment_button" name="submit" type="submit" value="submit"/></div>').appendTo(form);    
   }); // end click function
     return addCommentLink;
 };
@@ -499,4 +496,22 @@ submit.attr("disabled", false);
 submit.parent().find('.modal-ajax-wait').remove();
 }
 
+/** adds a captcha in the comment form */
+JSKOMMENT.authenticate_with_captcha_default = function(elem) {
+  $.ajax({
+    url:JSKOMMENT_CONFIG.captcha_url,
+    success:function(response) {
+      $('.jskomment_captcha').html($('<div>Captcha: <img src="data:image/jpeg;base64,'+response.challenge_data+'"/>'
+      +'</div>'));
+      
+      // adding the challenge id
+      $('<input type="hidden" name="captcha_challenge_field" value="'+response.challenge_id+'"/>').appendTo($('.jskomment_captcha'));    
+
+      $('<input type="text" name="captcha_response_field"/>').appendTo($('.jskomment_captcha'));    
+
+      // the user can submit again with the captcha
+      JSKOMMENT.enableForms();
+    }
+  });
+};
 
