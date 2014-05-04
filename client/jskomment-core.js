@@ -34,9 +34,6 @@ JSKOMMENT.waitImg = JSKOMMENT_CONFIG.waitImg || "./client/modal-ajax-wait.gif";
 //JSKOMMENT.protocol = 'PROBE';
 JSKOMMENT.protocol = JSKOMMENT_CONFIG.protocol || 'GUESS';
 
-/** The public key of recaptcha */
-JSKOMMENT.recaptchaPublicKey = JSKOMMENT_CONFIG.recaptchaPublicKey || "6Leuyekjhqzerzerzlrlkj";
-
 /** The max number of comments before folding them */
 JSKOMMENT.maxComments = JSKOMMENT_CONFIG.maxComments ||  10;
 
@@ -97,7 +94,7 @@ JSKOMMENT.ajax = function (ajaxParams, preferredMethod, protocol) {
 };
 
 /** sends the comment using the <FORM> received as elem */
-JSKOMMENT.send = function (elem, options) {
+JSKOMMENT.send = function (elem, callback) {
   
   if (!$(elem).hasClass('jskomment')) {
     var msg = 'error in API usage';
@@ -114,10 +111,8 @@ JSKOMMENT.send = function (elem, options) {
   try { if (localStorage) {localStorage.setItem('jskomment_username', $(elem).find('input[name="name"]').val());}} catch (e) {}
   try { if (localStorage) {localStorage.setItem('jskomment_email', $(elem).find('input[name="email"]').val());}} catch (e) {}
   
-  if (options && $.inArray('recaptcha', options) != -1) {
-    data['recaptcha_challenge_field']=Recaptcha.get_challenge();
-    data['recaptcha_response_field']=Recaptcha.get_response();
-  }
+  // may be null
+  data['authorization_data']=JSKOMMENT.authorization_data;
   
   // by default we use JSON-P with HTTP GET = Script node insertion in JQuery
   // cross-browser but limited to ~2k data
@@ -127,10 +122,15 @@ JSKOMMENT.send = function (elem, options) {
     data: data,
     success: function(val){
       JSKOMMENT.load(elem);
+      if (callback) { callback(); }
     },     
     error: function (xhr,err) {
-      if (xhr.status == 403) {
-        JSKOMMENT.captcha(elem);        
+      if (xhr.status == 403) { // unauthorized
+        try {
+        JSKOMMENT_CONFIG.authenticate(elem);        
+        } catch (exception) {
+          $('.jskomment').text('[jskomment] error no function authenticate while server sends 403 unauthorized');
+        }
       }     
       if (xhr.status == 503) {
         alert(xhr.responseText);        
@@ -261,7 +261,7 @@ JSKOMMENT.createAddCommentElement = function () {
     );
     $(clicked).parents('.jskomment').append(form);
     $(clicked).remove();
-    $('<div class="jskomment_recaptcha"></div>').appendTo(form);    
+    $('<div class="jskomment_captcha"></div>').appendTo(form);    
   }); // end click function
     return addCommentLink;
 };
@@ -387,12 +387,7 @@ JSKOMMENT.loadSWF = function(callback) {
 
 // main main
 JSKOMMENT.main = function () {
-  
-  
-  // loading recaptcha
-  // see http://code.google.com/apis/recaptcha/docs/display.html#AJAX
-  $.getScript('http://www.google.com/recaptcha/api/js/recaptcha_ajax.js');
-      
+        
   $(document).ready(function(){
     JSKOMMENT.mainContinue();
   
@@ -436,103 +431,72 @@ JSKOMMENT.mainContinue = function () {
       });
       JSKOMMENT.multiload(request);
       
-    }, 500);
+    }, 500
+  );
+};
+  
+/** generates a unique identifier */
+JSKOMMENT.uniqid = function  (prefix, more_entropy) {
+  // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +    revised by: Kankrelune (http://www.webfaktory.info/)
+  // %        note 1: Uses an internal counter (in php_js global) to avoid collision
+  // *     example 1: uniqid();
+  // *     returns 1: 'a30285b160c14'
+  // *     example 2: uniqid('foo');
+  // *     returns 2: 'fooa30285b1cd361'
+  // *     example 3: uniqid('bar', true);
+  // *     returns 3: 'bara20285b23dfd1.31879087'
+  
+  if (typeof prefix == 'undefined') {
+    prefix = "";
+  }
+  
+  var retId;
+  var formatSeed = function (seed, reqWidth) {
+    seed = parseInt(seed,10).toString(16); // to hex str
+    if (reqWidth < seed.length) { // so long we split
+          return seed.slice(seed.length - reqWidth);
+    }
+    if (reqWidth > seed.length) { // so short we pad
+          return Array(1 + (reqWidth - seed.length)).join('0')+seed;
+    }
+    return seed;
   };
   
-  //used for recaptcha
-  JSKOMMENT.uniqid = function  (prefix, more_entropy) {
-    // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-    // +    revised by: Kankrelune (http://www.webfaktory.info/)
-    // %        note 1: Uses an internal counter (in php_js global) to avoid collision
-    // *     example 1: uniqid();
-    // *     returns 1: 'a30285b160c14'
-    // *     example 2: uniqid('foo');
-    // *     returns 2: 'fooa30285b1cd361'
-    // *     example 3: uniqid('bar', true);
-    // *     returns 3: 'bara20285b23dfd1.31879087'
-    
-    if (typeof prefix == 'undefined') {
-      prefix = "";
-    }
-    
-    var retId;
-    var formatSeed = function (seed, reqWidth) {
-      seed = parseInt(seed,10).toString(16); // to hex str
-      if (reqWidth < seed.length) { // so long we split
-            return seed.slice(seed.length - reqWidth);
-      }
-      if (reqWidth > seed.length) { // so short we pad
-            return Array(1 + (reqWidth - seed.length)).join('0')+seed;
-      }
-      return seed;
-    };
-    
-    // BEGIN REDUNDANT
-    if (!this.php_js) {
-      this.php_js = {};
-    }
-    // END REDUNDANT
-    if (!this.php_js.uniqidSeed) { // init seed with big random int
-        this.php_js.uniqidSeed = Math.floor(Math.random() * 0x75bcd15);
-    }
-    this.php_js.uniqidSeed++;
-    
-    retId  = prefix; // start with prefix, add current milliseconds hex string
-    retId += formatSeed(parseInt(new Date().getTime()/1000,10),8);
-    retId += formatSeed(this.php_js.uniqidSeed,5); // add seed hex string
-    
-    if (more_entropy) {
-      // for more entropy we add a float lower to 10
-      retId += (Math.random()*10).toFixed(8).toString();
-    }
-    
-    return retId;
+  // BEGIN REDUNDANT
+  if (!this.php_js) {
+    this.php_js = {};
+  }
+  // END REDUNDANT
+  if (!this.php_js.uniqidSeed) { // init seed with big random int
+      this.php_js.uniqidSeed = Math.floor(Math.random() * 0x75bcd15);
+  }
+  this.php_js.uniqidSeed++;
+  
+  retId  = prefix; // start with prefix, add current milliseconds hex string
+  retId += formatSeed(parseInt(new Date().getTime()/1000,10),8);
+  retId += formatSeed(this.php_js.uniqidSeed,5); // add seed hex string
+  
+  if (more_entropy) {
+    // for more entropy we add a float lower to 10
+    retId += (Math.random()*10).toFixed(8).toString();
   }
   
-  /**  disables the submit form */
-  JSKOMMENT.disableForms = function() {
-    var submit = $('.jskomment input[type="submit"]');
-    submit.attr("disabled", true);
-    submit.after($('<img class="modal-ajax-wait" src="'+JSKOMMENT.waitImg+'"/>'));
-  }
-  
-  /**  re-enables the submit form */
-  JSKOMMENT.enableForms = function() {
-    var submit = $('.jskomment input[type="submit"]');
-  submit.attr("disabled", false);
-  submit.parent().find('.modal-ajax-wait').remove();
-  }
-  
-  /** adds a captcha */
-  JSKOMMENT.captcha = function (elem) {
-    
-    if (!$(elem).hasClass('jskomment')) {
-    var msg = 'error in API usage';
-    throw msg;
-    }
-    
-    var myrecaptcha = $(elem).find('.jskomment_recaptcha');
-  var id = JSKOMMENT.uniqid();
-  myrecaptcha.attr('id',id);
-  Recaptcha.create(JSKOMMENT.recaptchaPublicKey,
-                   id,
-                   {
-                     theme: "red",
-                   callback: 
-                   function() {
-                     var form = $(elem).find('.jskomment_form');
-  form.unbind('submit');
-              form.submit(function() {
-                JSKOMMENT.disableForms();
-                JSKOMMENT.send(elem, ['recaptcha']);
-                myrecaptcha.hide();          
-                return false;
-              });
-  Recaptcha.focus_response_field();
-  JSKOMMENT.enableForms();
-                   }
-                   }
-  );
-  return false;
-  }
-  
+  return retId;
+}
+
+/**  disables the submit form */
+JSKOMMENT.disableForms = function() {
+  var submit = $('.jskomment input[type="submit"]');
+  submit.attr("disabled", true);
+  submit.after($('<img class="modal-ajax-wait" src="'+JSKOMMENT.waitImg+'"/>'));
+}
+
+/**  re-enables the submit form */
+JSKOMMENT.enableForms = function() {
+  var submit = $('.jskomment input[type="submit"]');
+submit.attr("disabled", false);
+submit.parent().find('.modal-ajax-wait').remove();
+}
+
+
