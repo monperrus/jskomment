@@ -199,10 +199,8 @@ JSKOMMENT.multiload = function(request) {
       });
     },
     error: function(e) { 
-      //throw "fr";
-      window.console.error("err");
-      window.console.log((e.error().responseText)); 
-      
+      $('.jskomment').text('[jskomment] AJAX error, server message: '+e.error().responseText);
+      window.console.error('JSKOMMENT.multiload:'+(e.error().responseText));       
     }
   }
   

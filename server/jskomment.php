@@ -5,6 +5,18 @@ It is meant to be used with an appropriate .htaccess file
 
 @include('jskomment.local.php');
 
+if (defined('RECAPTCHA_PRIVATE_KEY')) {
+  // silent if recaptchalib is not present 
+  // may have already been included or an alternative implementation is provided somewhere
+  @include('recaptchalib.php');
+
+  // sanity check_recaptcha
+  if (!function_exists('recaptcha_check_answer')) {
+    header('HTTP/1.1 503');
+    die('incorrect configuration, recaptcha is expected but function recaptcha_check_answer does not exist (default implementation should be in recaptchalib.php)');
+  }
+}
+
 // all configuration variables may be overridden in jskomment.local.php
 @define('DATADIR','./jskomment-data/');
 @define('JSKOMMENT_EMAIL','jskomment@'.$_SERVER[HTTP_HOST]);
@@ -49,9 +61,6 @@ function check_recaptcha($comment) {
 
   unset($comment['recaptcha_response_field']);
   unset($comment['recaptcha_challenge_field']);
-
-  // silent if recaptchalib is not present 
-  @include('recaptchalib.php');
   
   if (!defined('RECAPTCHA_PRIVATE_KEY')) { // should be defined in jskomment.local.php
     return $comment;
