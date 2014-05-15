@@ -169,7 +169,7 @@ JSKOMMENT.display = function (array /* array of comment objects */) {
   elem.find('.jskomment_form').replaceWith(JSKOMMENT.createAddCommentElement());
   
   $(array).each(function (k,commentEntry) {
-    if (commentEntry.title != title) { 
+    if (!commentEntry || commentEntry.title != title) { 
       return; // resilience, should not crash if there is some garbage in the data
     };
     var ePoster = $('<span class="jskomment_user"/>').text(commentEntry.name+': ');                                                              
