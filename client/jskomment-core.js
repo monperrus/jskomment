@@ -169,7 +169,9 @@ JSKOMMENT.display = function (array /* array of comment objects */) {
   elem.find('.jskomment_form').replaceWith(JSKOMMENT.createAddCommentElement());
   
   $(array).each(function (k,commentEntry) {
-    if (commentEntry.title != title) { throw new Exception('oops, precondition failed'); };
+    if (commentEntry.title != title) { 
+      return; // resilience, should not crash if there is some garbage in the data
+    };
     var ePoster = $('<span class="jskomment_user"/>').text(commentEntry.name+': ');                                                              
     var eContent = $('<span class="jskomment_commentval"/>').html(
       JSKOMMENT.format_function(commentEntry.comment)
