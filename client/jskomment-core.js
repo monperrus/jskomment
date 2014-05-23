@@ -48,6 +48,13 @@ JSKOMMENT.format_function = JSKOMMENT_CONFIG.format_function || function (str) {
   return str.replace(/\n/g,'<br/>');
 };
 
+
+// the default function that returns the primary key of comments (the URL minus the anchor)
+JSKOMMENT.get_comment_key_function = JSKOMMENT_CONFIG.get_comment_key_function || function () {
+  return document.location.href.split('#')[0];
+};
+    
+
 // end configuration
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -279,7 +286,7 @@ JSKOMMENT.init = function (elem) {
   
   var title = $(elem).attr('title');
   if (title === undefined || title === "") {
-    title = document.location.href;
+    title = JSKOMMENT.get_comment_key_function(elem);
   }
   // setting the title in _title
   // because the browser uses this field as tooltip
