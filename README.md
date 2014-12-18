@@ -3,13 +3,13 @@ jskomment
 
 jskomment is an open source commenting system that is built on javascript and AJAX.
 
-It is inspired from <http://www.js-kit.com>, <http://www.intensedebate.com> and <http://www.disqus.com>. Its unique feature compared to the competition is that it supports multiple different comment threads per page.
+**No support is provided. Pull requests are welcome**
+
+jskomment is inspired from <http://www.js-kit.com>, <http://www.intensedebate.com> and <http://www.disqus.com>. Its unique feature compared to the competition is that it supports multiple different comment threads per page.
 
 Being open-source, you can modify it as much as you need, and you have access to the raw comment data.
 
 Demo: <http://www.monperrus.net/martin/open+source+ajax+commenting+system>
-
-Pull requests welcome!
 
 Installation
 ------------
