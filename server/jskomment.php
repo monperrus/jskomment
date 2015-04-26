@@ -3,20 +3,10 @@ This is a PHP server side implementation of Jskomment.
 It is meant to be used with an appropriate .htaccess file
 */
 
+// this may add some authorization
+// in function is_authorized($comment) {...}
+// the js code uses fields $comment['captcha_challenge_field'] and $comment['captcha_response_field']
 @include('jskomment.local.php');
-
-if (defined('RECAPTCHA_PRIVATE_KEY')) {
-  // may have already been included or an alternative implementation is provided somewhere
-  if (!function_exists('recaptcha_check_answer')) {
-    @include('recaptchalib.php');
-  }
-  
-  // sanity check_recaptcha
-  if (!function_exists('recaptcha_check_answer')) {
-    header('HTTP/1.1 503');
-    die('incorrect configuration, recaptcha is expected but function recaptcha_check_answer does not exist (default implementation should be in recaptchalib.php)');
-  }
-}
 
 // all configuration variables may be overridden in jskomment.local.php
 @define('DATADIR','./jskomment-data/');
@@ -55,39 +45,10 @@ function jskomment_js() {
   exit;
 }
 
-/** removes the authorization data from checks whether the recaptcha is correct if a private key is defined, then returns the $comment data without recaptcha info */
-function clean_comment($comment) {
-  unset($comment['captcha_response_field']);
-  unset($comment['captcha_challenge_field']);
-  return $comment;
-}
 
-/** checks whether the recaptcha is correct if a private key is defined, then returns the $comment data without recaptcha info */
 if (!function_exists('is_authorized')) {
 function is_authorized($comment) {  
-  if (!defined('RECAPTCHA_PRIVATE_KEY')) { // should be defined in jskomment.local.php
-    return true;
-  }
-  
-  // for backwards compatibility
-  if (isset($comment['recaptcha_response_field'])) {
-    $comment['captcha_response_field'] = $comment['recaptcha_response_field'];
-    unset($comment['recaptcha_response_field']);    
-  }  
-  if (isset($comment['recaptcha_challenge_field'])) {
-    $comment['captcha_challenge_field'] = $comment['recaptcha_response_field'];
-    unset($comment['recaptcha_challenge_field']);
-  }  
-  
-  $recaptcha_response_field = @$comment['captcha_response_field'];
-  $recaptcha_challenge_field = @$comment['captcha_challenge_field'];
-
-  $resp = recaptcha_check_answer(RECAPTCHA_PRIVATE_KEY,
-                                      $_SERVER["REMOTE_ADDR"],
-                                      $recaptcha_challenge_field,
-                                      $recaptcha_response_field);
-
-  return $resp->is_valid;
+  return true;
 }
 }
 
@@ -180,8 +141,6 @@ function add_comment($comment) {
     exit;
   }
   
-  $comment = clean_comment($comment);
-
   add_comment_action($comment);
   $fname=DATADIR.sha1(@$comment['title']);
 
