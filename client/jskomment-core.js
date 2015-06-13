@@ -171,9 +171,7 @@ JSKOMMENT.display = function (array /* array of comment objects */) {
   
   elem.find('.jskomment_previous').empty();
   
-  // replacing the form
-  // by a link
-  elem.find('.jskomment_form').replaceWith(JSKOMMENT.createAddCommentElement());
+  elem.find('.jskomment_form').remove();
   
   $(array).each(function (k,commentEntry) {
     if (!commentEntry || commentEntry.title != title) { 
@@ -185,8 +183,22 @@ JSKOMMENT.display = function (array /* array of comment objects */) {
     );                                                                                     
     var eDate = '';
     if (commentEntry.date) { eDate = $('<span class="jskomment_date"/>').text('('+commentEntry.date+')'); }
-    var eComment = $('<div class="jskomment_comment"/>').append(ePoster).append(eContent).append(eDate);                          
-    elem.find('.jskomment_previous').append(eComment);
+    var eComment = $('<div class="jskomment_comment" id="comment'+k+'"/>').append(ePoster).append(eContent).append(eDate);                          
+    var replyLink = JSKOMMENT.createAddCommentElement('Reply',k);
+    replyLink.click(function(event) {
+      var nextComments = $(event.target).parents('.jskomment_comment').nextAll();
+      nextComments.toggle(); // hiding all comments after
+    });
+    replyLink.appendTo(eComment);
+    
+    if (commentEntry.repliesTo && commentEntry.repliesTo>-1) {
+      var prev = elem.find('#comment'+commentEntry.repliesTo);
+      eComment.css('margin-left', prev.css('margin-left'));
+      eComment.animate({marginLeft: '+=10px'}, 0);
+      prev.after(eComment);
+    } else {
+      elem.find('.jskomment_previous').append(eComment);
+    }
   }
     );
     
@@ -236,11 +248,11 @@ JSKOMMENT.load = function (elem) {
 /** returns a clickable DOM element to add a comment
  * For instance, <a>Click to add a comment</a>
  */
-JSKOMMENT.createAddCommentElement = function () {
+JSKOMMENT.createAddCommentElement = function (text, k) {
   var addCommentLink = $(document.createElement('a'));
   addCommentLink.attr('href','javascript:void(0)');
   addCommentLink.attr('class','jskomment_add_comment');
-  addCommentLink.text('Click to leave a comment');
+  addCommentLink.text(text);
   
   addCommentLink.click(function() {
     var clicked = this; // this is bound by click
@@ -257,6 +269,7 @@ JSKOMMENT.createAddCommentElement = function () {
     +'<input id="title" type="hidden" name="title" value="'+title+'"/>'
     +'<div class="jskomment_input1">New comment from <input type="text" name="name" size="15"  value="'+name+'"/>: </div>'
     +'<div class="jskomment_input1">Email (optional, for pingback): <input type="text" name="email" size="15"  value="'+email+'"/>: </div>'
+    +'<input type="hidden" name="repliesTo" value="'+k+'"/>'
     +'<div class="jskomment_commentval"><textarea class="jskomment_input2" rows="6" cols="32" name="comment" value="your comment"/></div>'
     +'</form>');   
     
@@ -268,7 +281,6 @@ JSKOMMENT.createAddCommentElement = function () {
       }
     );
     $(clicked).parents('.jskomment').append(form);
-    $(clicked).remove();
     $('<div class="jskomment_captcha"></div>').appendTo(form);    
     $('<div class="jskomment_submit"><input class="jskomment_button" name="submit" type="submit" value="submit"/></div>').appendTo(form);    
   }); // end click function
@@ -294,12 +306,15 @@ JSKOMMENT.init = function (elem) {
   $(elem).attr('title','Commenting area powered by jskomment');
   
   var jskomment_header = $('<div class="jskomment_header"></div>');
-  jskomment_header.click(function() {$(elem).find('.jskomment_previous, .jskomment_add_comment').toggle();});
+  jskomment_header.click(function() {
+     $(elem).find('.jskomment_previous').toggle();
+     $(elem).find('.jskomment_add_comment').show();     
+   });
   jskomment_header.appendTo(elem);
   var jskomment_previous = $('<div class="jskomment_previous"></div>');
   jskomment_previous.appendTo(elem);
   
-  var addCommentLink = JSKOMMENT.createAddCommentElement();
+  var addCommentLink = JSKOMMENT.createAddCommentElement('Click to leave a comment',-1);
   addCommentLink.appendTo($(elem));
   
   
