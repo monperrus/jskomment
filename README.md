@@ -29,6 +29,32 @@ For page-based commenting:
     <script src="jskomment-core.js"></script>
     <div class="jskomment"></div>
     <script> JSKOMMENT.main(); </script>
+    
+**How to support Markdown in comments?**
+
+You can use any JS markdown library. For instance, with [pagedown](https://code.google.com/p/pagedown/):
+
+    <script type="text/javascript" src="pagedown/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="pagedown/Markdown.Sanitizer.js"></script>
+    <script> 
+    var converter = new Markdown.Converter();
+    JSKOMMENT_CONFIG={};
+    JSKOMMENT_CONFIG.url="http://www.example.com/jskomment/";
+    JSKOMMENT_CONFIG.format_function = function (str) { 
+      return converter.makeHtml(str);
+    };
+    </script>
+    
+**How to protect comments with captchas?**
+
+You can set up a captcha URL as follow:
+    JSKOMMENT_CONFIG={};
+    JSKOMMENT_CONFIG.captcha_url = 'http://www.monperrus.net/martin/captcha.php';
+    JSKOMMENT_CONFIG.authenticate = function(elem) {
+      JSKOMMENT.authenticate_with_captcha_default(elem);
+    };
+
+
 
 Troubleshooting
 ---------------
