@@ -48,6 +48,7 @@ You can use any JS markdown library. For instance, with [pagedown](https://code.
 **How to protect comments with captchas?**
 
 You can set up a captcha URL as follow:
+
     JSKOMMENT_CONFIG={};
     JSKOMMENT_CONFIG.captcha_url = 'http://www.monperrus.net/martin/captcha.php';
     JSKOMMENT_CONFIG.authenticate = function(elem) {
