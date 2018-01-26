@@ -5,9 +5,9 @@ jskomment is an open source commenting system that is built on javascript and AJ
 
 **No support is provided. Pull requests are welcome**
 
-jskomment is inspired from <http://www.js-kit.com>, <http://www.intensedebate.com> and <http://www.disqus.com>. Its unique feature compared to the competition is that it supports multiple different comment threads per page.
+See also the great tool ISSO, <https://github.com/posativ/isso>
 
-Being open-source, you can modify it as much as you need, and you have access to the raw comment data.
+Compared to <http://www.disqus.com>, you have complete control over the commenting data and you can modify it as much as you need.
 
 Demo: <http://www.monperrus.net/martin/open+source+ajax+commenting+system>
 
@@ -60,3 +60,9 @@ You can set up a captcha URL as follow:
 Troubleshooting
 ---------------
 Is `.htaccess` readable by the web server and loaded? Is mod_rewrite loaded?
+
+Insipration
+------------
+
+jskomment is inspired from <http://www.js-kit.com> and <http://www.intensedebate.com>
+
