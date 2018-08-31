@@ -5,9 +5,7 @@ jskomment is an open source commenting system that is built on javascript and AJ
 
 **No support is provided. Pull requests are welcome**
 
-See also the great tool ISSO, <https://github.com/posativ/isso>
-
-Compared to <http://www.disqus.com>, you have complete control over the commenting data and you can modify it as much as you need.
+I also recommend the great tool ISSO, <https://github.com/posativ/isso>
 
 Demo: <http://www.monperrus.net/martin/open+source+ajax+commenting+system>
 
@@ -61,8 +59,10 @@ Troubleshooting
 ---------------
 Is `.htaccess` readable by the web server and loaded? Is mod_rewrite loaded?
 
-Insipration
+Related work
 ------------
+
+Compared to <http://www.disqus.com>, you have complete control over the commenting data and you can modify it as much as you need.
 
 jskomment is inspired from <http://www.js-kit.com> and <http://www.intensedebate.com>
 
