@@ -1,4 +1,4 @@
-<? /* 
+<?php /* 
 This is a PHP server side implementation of Jskomment. 
 It is meant to be used with an appropriate .htaccess file
 */
@@ -27,9 +27,9 @@ function jskomment_js() {
   readfile('jquery-1.5.1.min.js');
   echo "}// end jquery \n";
 
-  echo "\n if (window.swfobject === undefined) { \n";
-  @readfile("swfobject.js");
-  echo "}// end swfobject \n";
+  //echo "\n if (window.swfobject === undefined) { \n";
+  //@readfile("swfobject.js");
+  //echo "}// end swfobject \n";
 
   readfile('json2.js');
 
@@ -47,6 +47,7 @@ function jskomment_js() {
 
 
 if (!function_exists('is_authorized')) {
+// can be overridden in jskomment.local.php for instance with captcha
 function is_authorized($comment) {  
   return true;
 }
@@ -134,6 +135,11 @@ function get_comments_as_json() {
   return json_encode($response);
 }
 
+function sanitize($str) {
+// return htmlspecialchars(strip_tags($str), ENT_NOQUOTES, 'utf-8');
+return $str;
+}
+
 /** adds a $comment (assoc array) in the database */
 function add_comment($comment) {
   if (!is_authorized($comment)) {
@@ -154,19 +160,19 @@ function add_comment($comment) {
   if (empty($namecheck)) {
     @$comment['name'] = 'Anonymous';
   } else {
-    @$comment['name'] = htmlspecialchars(strip_tags(@$comment['name']), ENT_NOQUOTES, 'utf-8');
+    @$comment['name'] = sanitize(@$comment['name']);
   }
 
   // Attach the commenter's website to their name if included.
   if (!empty($websitecheck)) {
-    @$comment['website'] = htmlspecialchars(strip_tags(@$comment['website']), ENT_NOQUOTES, 'utf-8');
+    @$comment['website'] = sanitize(@$comment['website']);
     // Markdown. It will be converted to a proper link when displayed.
     @$comment['name'] = '['. @$comment['name'] . '](' . @$comment['website']. ')';
   }
 
   // Sanitize the remaining fields.
-  @$comment['email'] = htmlspecialchars(strip_tags(@$comment['email']), ENT_NOQUOTES, 'utf-8');
-  @$comment['comment'] = htmlspecialchars(strip_tags(@$comment['comment']), ENT_NOQUOTES, 'utf-8');
+  @$comment['email'] = sanitize(@$comment['email']);
+  @$comment['comment'] = sanitize(@$comment['comment']);
 
   if (!is_writable(DATADIR) || (file_exists($fname) && !is_writable($fname))) {
     header('HTTP/1.1 503');
@@ -182,12 +188,13 @@ function add_comment($comment) {
     foreach(file($fname) as $line) {
       $result = json_decode($line, true);
       // /* for debug */ $x[] = var_export($result,true);
-      if (isset($result['email']) && !in_array($result['email'], $x)&& $result['title']==$comment['title']) {
+      if (isset($result['email']) && !in_array($result['email'], $x)&& $result['title']==$comment['title'] && $result['title']!='http://www.monperrus.net/martin/open+source+ajax+commenting+system') {
         $x[] = $result['email'];
         @mail($result['email'], '[comment] '.$result['title'],
-          "Hi,<br/><br/>A comment has been posted on <a href=\"".$result['title']."\">".$result['title']."</a>:<br/><br/>".
+          "> A comment has been posted on <a href=\"".$result['title']."\">".$result['title']."</a><br/><br/>".
           str_replace("\n","<br/>",htmlentities($comment['comment'])), 
-               "From: ".JSKOMMENT_EMAIL."\r\n".
+               "From: <".JSKOMMENT_EMAIL.">\r\n".
+               "Reply-to: <".$result['email'].">\r\n".
                "MIME-Version: 1.0" . "\r\n" .
                "Content-type: text/html; charset=UTF-8" . "\r\n"
         );

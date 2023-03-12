@@ -51,7 +51,7 @@ JSKOMMENT.format_function = JSKOMMENT_CONFIG.format_function || function (str) {
 
 // the default function that returns the primary key of comments (the URL minus the anchor)
 JSKOMMENT.get_comment_key_function = JSKOMMENT_CONFIG.get_comment_key_function || function () {
-  return document.location.href.split('#')[0];
+  return document.location.href.replace('https:','http:').split('#')[0];
 };
     
 
@@ -270,7 +270,7 @@ JSKOMMENT.createAddCommentElement = function (text, k) {
     +'<div class="jskomment_input1">New comment from <input type="text" name="name" size="15"  value="'+name+'"/>: </div>'
     +'<div class="jskomment_input1">Email (optional, for pingback): <input type="text" name="email" size="15"  value="'+email+'"/>: </div>'
     +'<input type="hidden" name="repliesTo" value="'+k+'"/>'
-    +'<div class="jskomment_commentval"><textarea class="jskomment_input2" rows="6" cols="32" name="comment" value="your comment"/></div>'
+    +'<div class="jskomment_commentval"><textarea class="jskomment_input2" rows="6" cols="32" name="comment" value="your comment"></textarea></div>'
     +'</form>');   
     
     form.submit(
